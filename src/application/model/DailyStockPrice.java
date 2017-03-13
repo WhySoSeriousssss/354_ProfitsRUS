@@ -1,5 +1,5 @@
 
-package application;
+package application.model;
 
 import java.util.Date;
 import java.text.DateFormat;
