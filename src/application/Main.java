@@ -22,9 +22,7 @@ public class Main extends Application {
 	private final int MARGIN = 100;
 	
 	private Stock stock = new Stock();
-	
-	private int priceMultiplier;
-	
+		
 	private float upperPrice = 1;
 	private float lowerPrice = 1;
 	private Date startDate; // Starting date is the last day of the existing record
@@ -79,34 +77,6 @@ public class Main extends Application {
 		}
 	}
 
-	public void DrawDailyStock(float high, float low, float open, float close, Pane root) {		
-		// Draw the "High-low" price line
-		Line line = new Line();
-		line.setStartX(550.0f);
-		line.setStartY(600.0f - high);
-		line.setEndX(550.0f);
-		line.setEndY(600.0f - low);
-		
-		// Draw the "Open-close" price Rectangle
-		Rectangle r = new Rectangle();
-		r.setX(550.0f - 5.0f);
-		r.setY(600.0f - ((open > close)?open:close));
-		r.setWidth(10.0f);
-		r.setHeight(Math.abs(open - close));
-		
-		if (close < open) {
-			line.setStroke(Color.GREEN);
-			r.setFill(Color.GREEN);
-		}
-		else {
-			line.setStroke(Color.RED);
-			r.setFill(Color.RED);
-		}
-		
-        root.getChildren().add(line);
-        root.getChildren().add(r);
-	}
-	
 	
 	@Override
 	public void start(Stage primaryStage) {
@@ -177,8 +147,7 @@ public class Main extends Application {
 	}
 	
 	public static void main(String[] args) {
-	//	Stock s = new Stock();
-	//	s.Print();
+
 		launch(args);
 	}
 }
