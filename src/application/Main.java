@@ -25,8 +25,7 @@ public class Main extends Application {
 		
 	private float upperPrice = 1;
 	private float lowerPrice = 1;
-	private Date startDate; // Starting date is the last day of the existing record
-	private int period = 19; // Default time period of a stock to be displayed is 10 days
+	private int period = 50; // 20 days' prices will be displayed by default
 	
 	private float spaceBetweenDates;
 	private float spaceBetweenPrices;
@@ -77,6 +76,26 @@ public class Main extends Application {
 		}
 	}
 
+	public void DrawSMA(int n, Pane root) {
+		float ma[] = new float[period];
+		for (int i = 0; i < period; i++) {
+			float sum = 0;
+			for (int j = 0; j < n; j++) {
+				sum += stock.GetDailyPrice(i + j).GetClose();
+			}
+			ma[i] = sum / n;
+		}
+		
+		for (int i = 0; i < period - 1; i++) {
+			Line line = new Line();
+			line.setStartX(WIDTH - (i + 1) * spaceBetweenDates);
+			line.setStartY(HEIGHT * (upperPrice - ma[i]) / (upperPrice - lowerPrice));
+			line.setEndX(WIDTH - (i + 2) * spaceBetweenDates);
+			line.setEndY(HEIGHT * (upperPrice - ma[i + 1]) / (upperPrice - lowerPrice));
+			line.setStroke(Color.YELLOW);
+			root.getChildren().add(line);
+		}
+	}
 	
 	@Override
 	public void start(Stage primaryStage) {
@@ -136,7 +155,7 @@ public class Main extends Application {
 	        */
 	        
 	        DrawChart(root);
-	        
+	        DrawSMA(20, root);
 			primaryStage.setScene(scene);
 			primaryStage.show();
 			
