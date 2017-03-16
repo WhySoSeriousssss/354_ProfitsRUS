@@ -3,9 +3,15 @@ package application;
 import application.model.*;
 
 import javafx.application.Application;
+import javafx.event.ActionEvent;
 import javafx.stage.Stage;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
+import javafx.scene.control.Separator;
+import javafx.scene.control.ToggleButton;
+import javafx.scene.control.ToggleGroup;
+import javafx.scene.control.ToolBar;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
 
 import java.text.DateFormat;
@@ -25,7 +31,7 @@ public class Main extends Application {
 		
 	private float upperPrice = 1;
 	private float lowerPrice = 1;
-	private int period = 50; // 20 days' prices will be displayed by default
+	private int period = 20; // 20 days' prices will be displayed by default
 	
 	private float spaceBetweenDates;
 	private float spaceBetweenPrices;
@@ -97,15 +103,69 @@ public class Main extends Application {
 		}
 	}
 	
+	public void EraseSMA(int n, Pane root) {
+		
+	}
+	
 	@Override
 	public void start(Stage primaryStage) {
 		try {
 			InitializeStock();
 			
-			Pane root = new Pane();
+			BorderPane root = new BorderPane();
 			Scene scene = new Scene(root, WIDTH + MARGIN, HEIGHT + MARGIN);
-			scene.setFill(Color.BLACK);
-			scene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
+	//		scene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
+			
+			//
+			Pane chart = new Pane();
+			chart.setStyle("-fx-background-color: #000000;");
+			root.setCenter(chart);
+			
+			// Toolbar
+			ToggleButton addMA20 = new ToggleButton("MA(20)");
+			ToggleButton addMA50 = new ToggleButton("MA(50)");
+			ToggleButton addMA100 = new ToggleButton("MA(100)");
+			ToggleButton addMA200 = new ToggleButton("MA(200)");
+			
+			ToolBar toolBar1 = new ToolBar();
+			toolBar1.getItems().addAll(new Separator(), addMA20, addMA50, addMA100, addMA200, new Separator());
+			root.setTop(toolBar1);
+			
+			// Toggle buttons actions
+			addMA20.setOnAction((ActionEvent e) -> {
+			    if (addMA20.isSelected()) {
+			    	DrawSMA(20, chart);
+			    }
+			    else {
+			    	EraseSMA(20, chart);
+			    }
+			});
+			addMA50.setOnAction((ActionEvent e) -> {
+			    if (addMA50.isSelected()) {
+			    	DrawSMA(50, chart);
+			    }
+			    else {
+			    	EraseSMA(50, chart);
+			    }
+			});
+			addMA100.setOnAction((ActionEvent e) -> {
+			    if (addMA100.isSelected()) {
+			    	DrawSMA(100, chart);
+			    }
+			    else {
+			    	EraseSMA(100, chart);
+			    }
+			});
+			addMA200.setOnAction((ActionEvent e) -> {
+			    if (addMA200.isSelected()) {
+			    	DrawSMA(200, chart);
+			    }
+			    else {
+			    	EraseSMA(200, chart);
+			    }
+			});
+			
+			
 			
 			// Draw the x axis, which is the date line
 			Line x_axis = new Line();
@@ -114,7 +174,7 @@ public class Main extends Application {
 	        x_axis.setEndX(WIDTH);
 	        x_axis.setEndY(HEIGHT);
 	        x_axis.setStroke(Color.WHITE);
-	        root.getChildren().add(x_axis);
+	        chart.getChildren().add(x_axis);
 		    
 	        // Draw the y axis, which is the price line
 	        Line y_axis = new Line();
@@ -123,7 +183,7 @@ public class Main extends Application {
 	        y_axis.setEndX(WIDTH);
 	        y_axis.setEndY(HEIGHT);
 	        y_axis.setStroke(Color.WHITE);
-	        root.getChildren().add(y_axis);
+	        chart.getChildren().add(y_axis);
 	        
 	        // Paint the grid
 	        for (float i = WIDTH; i >= 0; i -= spaceBetweenDates) {
@@ -134,7 +194,7 @@ public class Main extends Application {
 		        l.setEndY(HEIGHT);
 		        l.setStroke(Color.WHITE);
 		        l.setStrokeWidth(0.3);
-		        root.getChildren().add(l);
+		        chart.getChildren().add(l);
 	        }
 	        for (float i = 0; i < HEIGHT; i += spaceBetweenPrices) {
 		        Line l = new Line();
@@ -144,7 +204,7 @@ public class Main extends Application {
 		        l.setEndY(i);
 		        l.setStroke(Color.WHITE);
 		        l.setStrokeWidth(0.3);
-		        root.getChildren().add(l);
+		        chart.getChildren().add(l);
 	        }
 
 	        /*
@@ -154,10 +214,11 @@ public class Main extends Application {
 	        root.getChildren().add(label);
 	        */
 	        
-	        DrawChart(root);
-	        DrawSMA(20, root);
+	        DrawChart(chart);
+	        
 			primaryStage.setScene(scene);
 			primaryStage.show();
+			
 			
 		} catch(Exception e) {
 			e.printStackTrace();
