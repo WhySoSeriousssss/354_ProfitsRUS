@@ -1,14 +1,18 @@
 
 package application.model;
 
-import java.util.Date;
+
+import java.util.GregorianCalendar;
+import java.util.Calendar;
+import java.util.TimeZone;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public class DailyStockPrice {
 
-	private Date date;
+	private GregorianCalendar date;
 	private float Opening;
 	private float High;
 	private float Low;
@@ -17,16 +21,12 @@ public class DailyStockPrice {
 	
 	private int Volumn;
 	
-	public DailyStockPrice(String date, float open, float high, float low, float close, int volumn, float adjclose) {	
+	public DailyStockPrice(String strDate, float open, float high, float low, float close, int volumn, float adjclose) throws ParseException {
+		DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+		Date d = df.parse(strDate);
+		date = new GregorianCalendar();
+		date.setTime(d);
 
-		// Convert String to type "Date"
-		DateFormat format = new SimpleDateFormat("MM/dd/yyyy");
-		try {
-			this.date = format.parse(date);
-		} catch (ParseException e) {
-			e.printStackTrace();
-		}
-		
 		this.Opening = open;
 		this.High = high;
 		this.Low = low;
@@ -35,7 +35,7 @@ public class DailyStockPrice {
 		this.Volumn = volumn;
 	}
 	
-	public Date GetDate() {
+	public GregorianCalendar GetDate() {
 		return this.date;
 	}
 	
@@ -64,7 +64,6 @@ public class DailyStockPrice {
 	}
 	
 	public void Print() {
-		DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd");
-		System.out.println(dateFormat.format(date) + " " + Opening + " " + High + " " + Low + " " + Close + " " + Volumn +  " " + AdjClose);
+		System.out.println(date.toString() + " " + Opening + " " + High + " " + Low + " " + Close + " " + Volumn +  " " + AdjClose);
 	}
 }

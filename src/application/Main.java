@@ -21,30 +21,43 @@ import java.util.Date;
 import application.model.Stock;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.*;
+import java.util.GregorianCalendar;
+import java.util.ArrayList;
+import java.util.Calendar;
 
 public class Main extends Application {
+	private enum Month {
+		Jan, Feb, Mar, Apr, May, Jun, Jul, Aug, Sep, Oct, Nov, Dec
+	}
 	private final int WIDTH = 800;
 	private final int HEIGHT = 600;
 	private final int MARGIN = 100;
 	
-	private Stock stock = new Stock();
+	private Stock stock;
 		
 	private float upperPrice = 1;
 	private float lowerPrice = 1;
-	private int period = 20; // 20 days' prices will be displayed by default
+	private int period = 50; // 20 days' prices will be displayed by default
 	
 	private float spaceBetweenDates;
 	private float spaceBetweenPrices;
 	
+	private Line[] SMA20 = new Line[period-1];
+	private Line[] SMA50 = new Line[period-1];
+	private Line[] SMA100 = new Line[period-1];
+	private Line[] SMA200 = new Line[period-1];
+	
 	private void InitializeStock() {
+		GregorianCalendar start = new GregorianCalendar(2016, 1, 3);
+		GregorianCalendar end = new GregorianCalendar(2017, 1, 3);
+		stock = StockFetcher.get("IBM", start, end);
+		
 		upperPrice = (float) Math.ceil(stock.HighestPriceOverAPeriod(period));
 		lowerPrice = (float) Math.floor(stock.LowestPriceOverAPeriod(period));
 		
-		spaceBetweenDates = WIDTH / (period + 1);
+		spaceBetweenDates = WIDTH / ((float)period + 1);
 		spaceBetweenPrices = HEIGHT / (upperPrice - lowerPrice);
-		
-		System.out.println("high is " + upperPrice + " low is " + lowerPrice);
-	}
+		}
 	
 	public void DrawChart(Pane root) {
 		for (int i = 0; i < period; i++) {
@@ -69,12 +82,12 @@ public class Main extends Application {
 			
 			
 			if (close < open) {
-				line.setStroke(Color.GREEN);
-				r.setFill(Color.GREEN);
-			}
-			else {
 				line.setStroke(Color.RED);
 				r.setFill(Color.RED);
+			}
+			else {
+				line.setStroke(Color.GREEN);
+				r.setFill(Color.GREEN);
 			}
 			
 	        root.getChildren().add(line);
@@ -82,7 +95,8 @@ public class Main extends Application {
 		}
 	}
 
-	public void DrawSMA(int n, Pane root) {
+
+	public void InitializeSMA(int n, Pane root) {
 		float ma[] = new float[period];
 		for (int i = 0; i < period; i++) {
 			float sum = 0;
@@ -93,18 +107,79 @@ public class Main extends Application {
 		}
 		
 		for (int i = 0; i < period - 1; i++) {
-			Line line = new Line();
-			line.setStartX(WIDTH - (i + 1) * spaceBetweenDates);
-			line.setStartY(HEIGHT * (upperPrice - ma[i]) / (upperPrice - lowerPrice));
-			line.setEndX(WIDTH - (i + 2) * spaceBetweenDates);
-			line.setEndY(HEIGHT * (upperPrice - ma[i + 1]) / (upperPrice - lowerPrice));
-			line.setStroke(Color.YELLOW);
-			root.getChildren().add(line);
+			switch(n) {
+			case 20:
+				SMA20[i] = new Line();
+				SMA20[i].setStartX(WIDTH - (i + 1) * spaceBetweenDates);
+				SMA20[i].setStartY(HEIGHT * (upperPrice - ma[i]) / (upperPrice - lowerPrice));
+				SMA20[i].setEndX(WIDTH - (i + 2) * spaceBetweenDates);
+				SMA20[i].setEndY(HEIGHT * (upperPrice - ma[i + 1]) / (upperPrice - lowerPrice));
+				SMA20[i].setStroke(Color.YELLOW);
+				break;
+			case 50:
+				SMA50[i] = new Line();
+				SMA50[i].setStartX(WIDTH - (i + 1) * spaceBetweenDates);
+				SMA50[i].setStartY(HEIGHT * (upperPrice - ma[i]) / (upperPrice - lowerPrice));
+				SMA50[i].setEndX(WIDTH - (i + 2) * spaceBetweenDates);
+				SMA50[i].setEndY(HEIGHT * (upperPrice - ma[i + 1]) / (upperPrice - lowerPrice));
+				SMA50[i].setStroke(Color.YELLOW);
+				break;
+			case 100:
+				SMA100[i] = new Line();
+				SMA100[i].setStartX(WIDTH - (i + 1) * spaceBetweenDates);
+				SMA100[i].setStartY(HEIGHT * (upperPrice - ma[i]) / (upperPrice - lowerPrice));
+				SMA100[i].setEndX(WIDTH - (i + 2) * spaceBetweenDates);
+				SMA100[i].setEndY(HEIGHT * (upperPrice - ma[i + 1]) / (upperPrice - lowerPrice));
+				SMA100[i].setStroke(Color.YELLOW);
+				break;
+			case 200:
+				SMA200[i] = new Line();
+				SMA200[i].setStartX(WIDTH - (i + 1) * spaceBetweenDates);
+				SMA200[i].setStartY(HEIGHT * (upperPrice - ma[i]) / (upperPrice - lowerPrice));
+				SMA200[i].setEndX(WIDTH - (i + 2) * spaceBetweenDates);
+				SMA200[i].setEndY(HEIGHT * (upperPrice - ma[i + 1]) / (upperPrice - lowerPrice));
+				SMA200[i].setStroke(Color.YELLOW);
+				break;
+			}					
+		}
+	}
+	
+	private void DrawSMA(int n, Pane root) {
+		for (int i = 0; i < period - 1; i++) {
+			switch(n) {
+			case 20:
+				root.getChildren().add(SMA20[i]);
+				break;
+			case 50:
+				root.getChildren().add(SMA50[i]);
+				break;
+			case 100:
+				root.getChildren().add(SMA100[i]);
+				break;
+			case 200:
+				root.getChildren().add(SMA200[i]);
+				break;
+			}
 		}
 	}
 	
 	public void EraseSMA(int n, Pane root) {
-		
+		for (int i = 0; i < period - 1; i++) {
+			switch(n) {
+			case 20:
+				root.getChildren().remove(SMA20[i]);
+				break;
+			case 50:
+				root.getChildren().remove(SMA50[i]);
+				break;
+			case 100:
+				root.getChildren().remove(SMA100[i]);
+				break;
+			case 200:
+				root.getChildren().remove(SMA200[i]);
+				break;
+			}
+		}
 	}
 	
 	@Override
@@ -115,11 +190,16 @@ public class Main extends Application {
 			BorderPane root = new BorderPane();
 			Scene scene = new Scene(root, WIDTH + MARGIN, HEIGHT + MARGIN);
 	//		scene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
-			
+						
 			//
 			Pane chart = new Pane();
 			chart.setStyle("-fx-background-color: #000000;");
 			root.setCenter(chart);
+			
+			InitializeSMA(20, chart);
+			InitializeSMA(50, chart);
+			InitializeSMA(100, chart);
+			InitializeSMA(200, chart);
 			
 			// Toolbar
 			ToggleButton addMA20 = new ToggleButton("MA(20)");
@@ -193,7 +273,7 @@ public class Main extends Application {
 		        l.setEndX(i);
 		        l.setEndY(HEIGHT);
 		        l.setStroke(Color.WHITE);
-		        l.setStrokeWidth(0.3);
+		        l.setStrokeWidth(0.2);
 		        chart.getChildren().add(l);
 	        }
 	        for (float i = 0; i < HEIGHT; i += spaceBetweenPrices) {
@@ -203,16 +283,58 @@ public class Main extends Application {
 		        l.setEndX(WIDTH);
 		        l.setEndY(i);
 		        l.setStroke(Color.WHITE);
-		        l.setStrokeWidth(0.3);
+		        l.setStrokeWidth(0.2);
 		        chart.getChildren().add(l);
 	        }
 
-	        /*
-	        Label label = new Label("hello world");
-	        label.setTextFill(Color.YELLOW);
-	        label.setPrefSize(100, 100);
-	        root.getChildren().add(label);
-	        */
+	        // Draw the labels on the price axis
+	        for (int i = 0; i <= (upperPrice - lowerPrice); i++) {
+	        	Label label = new Label(String.valueOf(upperPrice - i));
+		        label.setTextFill(Color.YELLOW);
+		        label.setPrefSize(100, 100);
+		        label.setLayoutX(WIDTH + 10);
+		        label.setLayoutY(spaceBetweenPrices * i - 50);
+		        chart.getChildren().add(label);
+	        }
+	        
+	        
+	        // Draw the labels on the date axis
+	        int base_month = stock.GetDailyPrice(0).GetDate().get(Calendar.MONTH);
+	        int base_year = stock.GetDailyPrice(0).GetDate().get(Calendar.YEAR);
+	        
+	        for (int i = 0; i < period; i++) {
+	        	// labels of day
+	        	Label label = new Label(String.valueOf(stock.GetDailyPrice(i).GetDate().get(Calendar.DAY_OF_MONTH)));
+	        	label.setTextFill(Color.YELLOW);
+		        label.setPrefSize(100, 100);
+		        label.setLayoutX(WIDTH - spaceBetweenDates * i - 20);
+		        label.setLayoutY(HEIGHT - 40);
+		        chart.getChildren().add(label);
+		        
+		        // labels of month
+		        int month = stock.GetDailyPrice(i).GetDate().get(Calendar.MONTH);
+		        if (month != base_month) {
+		        	Label label_month = new Label(String.valueOf(Month.values()[base_month]));
+		        	label_month.setTextFill(Color.YELLOW);
+		        	label_month.setPrefSize(100, 100);
+		        	label_month.setLayoutX(WIDTH - spaceBetweenDates * i);
+		        	label_month.setLayoutY(HEIGHT - 20);
+			        chart.getChildren().add(label_month);
+			        base_month = month;
+		        }
+		        
+		        // labels of year
+		        int year = stock.GetDailyPrice(i).GetDate().get(Calendar.YEAR);
+		        if (year != base_year) {
+		        	Label label_year = new Label(String.valueOf(base_year));
+		        	label_year.setTextFill(Color.YELLOW);
+		        	label_year.setPrefSize(100, 100);
+		        	label_year.setLayoutX(WIDTH - spaceBetweenDates * i);
+		        	label_year.setLayoutY(HEIGHT);
+			        chart.getChildren().add(label_year);
+			        base_year = year;
+		        }
+	        }
 	        
 	        DrawChart(chart);
 	        
@@ -227,7 +349,7 @@ public class Main extends Application {
 	}
 	
 	public static void main(String[] args) {
-
+	
 		launch(args);
 	}
 }
