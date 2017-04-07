@@ -184,6 +184,7 @@ public class Main extends Application {
 	
 	@Override
 	public void start(Stage primaryStage) {
+		
 		try {
 			InitializeStock();
 			
@@ -345,6 +346,8 @@ public class Main extends Application {
 		} catch(Exception e) {
 			e.printStackTrace();
 		}
+		
+		LoginBox.display();
 
 	}
 	
