@@ -25,6 +25,10 @@ import java.util.Date;
 import application.model.Stock;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.*;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
+import javafx.scene.text.Text;
+
 import java.util.GregorianCalendar;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -46,10 +50,24 @@ public class Main extends Application {
 	private float spaceBetweenDates;
 	private float spaceBetweenPrices;
 	
+	private Line[] SMACompare = new Line[period-1]; //comparison line for finding indicators
+	private int comparatorAverage = 1;        		// set average
+	
 	private Line[] SMA20 = new Line[period-1];
 	private Line[] SMA50 = new Line[period-1];
 	private Line[] SMA100 = new Line[period-1];
 	private Line[] SMA200 = new Line[period-1];
+	
+	
+	private ArrayList<Polygon>[] indicatorPolygons = new ArrayList [4];
+	private ArrayList<Text>[] indicatorText = new ArrayList [4];
+	
+	
+	private float[] maCompare;
+	private float[] ma1; 							//to check ma values
+	private float[] ma2;
+	private float[] ma3;
+	private float[] ma4;
 	
 	private BorderPane root = new BorderPane(); // the pane of the main interface
 	private Scene scene = new Scene(root, WIDTH + MARGIN, HEIGHT + MARGIN); // the scene of the main interface
@@ -117,10 +135,15 @@ public class Main extends Application {
 		chart.setStyle("-fx-background-color: #000000;");
 		root.setCenter(chart);
 		
+		InitializeSMA(comparatorAverage, chart);
+		
 		InitializeSMA(20, chart);
 		InitializeSMA(50, chart);
 		InitializeSMA(100, chart);
 		InitializeSMA(200, chart);
+		
+		initIndicators();
+		findIndicators();
 		
 		// Toolbar
 		ToggleButton addMA20 = new ToggleButton("MA(20)");
@@ -133,41 +156,92 @@ public class Main extends Application {
 			selectStockBox();
 		});
 		
+		// indicators
+		ToggleButton addIndicatorsBtn = new ToggleButton("Add Indicators");
+		addIndicatorsBtn.setOnAction((ActionEvent e) -> {
+		    if (addIndicatorsBtn.isSelected()) {
+		    	DrawSMA(comparatorAverage, chart);
+		    	if(addMA20.isSelected()){
+		    		DrawIND(0,chart);
+		    	}
+		    	if(addMA50.isSelected()){
+		    		DrawIND(1,chart);
+		    	}
+		    	if(addMA100.isSelected()){
+		    		DrawIND(2,chart);
+		    	}
+		    	if(addMA200.isSelected()){
+		    		DrawIND(3,chart);
+		    	}
+		    }
+		    else {
+		    	EraseSMA(comparatorAverage, chart);
+		    	EraseIND(0,chart);
+		    	EraseIND(1,chart);
+		    	EraseIND(2,chart);
+		    	EraseIND(3,chart);
+		    }
+		});
+		
 		ToolBar toolBar1 = new ToolBar();
-		toolBar1.getItems().addAll(new Separator(), addMA20, addMA50, addMA100, addMA200, new Separator(), selectStockBtn);
+		toolBar1.getItems().addAll(new Separator(), addMA20, addMA50, addMA100, addMA200, new Separator(), selectStockBtn, new Separator(), addIndicatorsBtn);
 		root.setTop(toolBar1);
 		
 		// Toggle buttons actions
 		addMA20.setOnAction((ActionEvent e) -> {
 		    if (addMA20.isSelected()) {
 		    	DrawSMA(20, chart);
+		    	if(addIndicatorsBtn.isSelected()){
+		    		DrawIND(0,chart);
+		    	}
 		    }
 		    else {
 		    	EraseSMA(20, chart);
+		    	if(addIndicatorsBtn.isSelected()){
+		    		EraseIND(0,chart);
+		    	}
 		    }
 		});
 		addMA50.setOnAction((ActionEvent e) -> {
 		    if (addMA50.isSelected()) {
 		    	DrawSMA(50, chart);
+		    	if(addIndicatorsBtn.isSelected()){
+		    		DrawIND(1,chart);
+		    	}
 		    }
 		    else {
 		    	EraseSMA(50, chart);
+		    	if(addIndicatorsBtn.isSelected()){
+		    		EraseIND(1,chart);
+		    	}
 		    }
 		});
 		addMA100.setOnAction((ActionEvent e) -> {
 		    if (addMA100.isSelected()) {
 		    	DrawSMA(100, chart);
+		    	if(addIndicatorsBtn.isSelected()){
+		    		DrawIND(2,chart);
+		    	}
 		    }
 		    else {
 		    	EraseSMA(100, chart);
+		    	if(addIndicatorsBtn.isSelected()){
+		    		EraseIND(2,chart);
+		    	}
 		    }
 		});
 		addMA200.setOnAction((ActionEvent e) -> {
 		    if (addMA200.isSelected()) {
 		    	DrawSMA(200, chart);
+		    	if(addIndicatorsBtn.isSelected()){
+		    		DrawIND(3,chart);
+		    	}
 		    }
 		    else {
 		    	EraseSMA(200, chart);
+		    	if(addIndicatorsBtn.isSelected()){
+		    		EraseIND(3,chart);
+		    	}
 		    }
 		});
 		
@@ -306,15 +380,56 @@ public class Main extends Application {
 	// Initially set all SMAs
 	public void InitializeSMA(int n, Pane root) {
 		float ma[] = new float[period];
+//		System.out.print("For MA at " + n);
+		System.out.format("%15s%5d","For MA at ",n);
+		for (int i = 0; i < period; i++) {
+			System.out.format("%15d",i);
+		}
+		System.out.println();
+		
+		System.out.format("%15s%5d","For MA at ",n);
 		for (int i = 0; i < period; i++) {
 			float sum = 0;
 			for (int j = 0; j < n; j++) {
 				sum += stock.GetDailyPrice(i + j).GetClose();
 			}
 			ma[i] = sum / n;
+			System.out.format("%15.1f",ma[i]);
+		}
+		
+		System.out.println();
+		
+		
+		if(n==comparatorAverage){
+			maCompare = ma;
+		}else{
+			switch(n){
+			case 20:
+				ma1 = ma;
+				break;
+			case 50:
+				ma2 = ma;
+				break;
+			case 100:
+				ma3 =ma;
+				break;
+			case 200:
+				ma4 =ma;
+				break;		
+			}
 		}
 		
 		for (int i = 0; i < period - 1; i++) {
+			if(n == comparatorAverage){
+				SMACompare[i] = new Line();
+				SMACompare[i].setStartX(WIDTH - (i + 1) * spaceBetweenDates);
+				SMACompare[i].setStartY(HEIGHT * (upperPrice - ma[i]) / (upperPrice - lowerPrice));
+				SMACompare[i].setEndX(WIDTH - (i + 2) * spaceBetweenDates);
+				SMACompare[i].setEndY(HEIGHT * (upperPrice - ma[i + 1]) / (upperPrice - lowerPrice));
+				SMACompare[i].setStroke(Color.YELLOW);
+				continue;
+			}
+			
 			switch(n) {
 			case 20:
 				SMA20[i] = new Line();
@@ -352,9 +467,83 @@ public class Main extends Application {
 		}
 	}
 	
+	//init indicator polygons arrays
+	private void initIndicators(){
+		for(int i=0;i<4;i++){
+			indicatorPolygons[i]= new ArrayList <Polygon>();
+			indicatorText[i] = new ArrayList <Text>();
+		}
+	}
+	
+	//find where sma meets comparator
+	private void findIndicators (){
+		findIndicatorHelper(maCompare, ma1, 0);
+		findIndicatorHelper(maCompare, ma2, 1);
+		findIndicatorHelper(maCompare, ma3, 2);
+		findIndicatorHelper(maCompare, ma4, 3);
+	}
+	
+	private void findIndicatorHelper (float[] comp, float [] ma, int n){
+		for(int i = 1; i< period-1; i++){
+			if(ma[i-1]>comp[i-1]&&ma[i]<comp[i]){
+				double p1 = ((double)(WIDTH - (i ) * spaceBetweenDates));
+				double p2 = ((double)(WIDTH - (i + 1) * spaceBetweenDates));
+				double p3 = (p1+p2)/2;
+				double y0 = (HEIGHT * (upperPrice - ma[i + 1]) / (upperPrice - lowerPrice));
+				double y1 = y0-55;
+				double y2 = y0-25;
+				System.out.println("SELL");
+				Polygon pol = new Polygon();
+				pol.getPoints().addAll(new Double[]{
+				p1, y1,
+				p2, y1,
+				p3, y2,
+				});
+				pol.setFill(Color.LIGHTBLUE);
+				Text label = new Text();
+				label.setX(p1-2);
+				label.setY(y2-10);
+				label.setText("SELL");
+				label.setFill(Color.CHARTREUSE);
+				label.setFont(Font.font(null, FontWeight.BOLD, 12));
+				indicatorPolygons[n].add(pol);
+				indicatorText[n].add(label);
+			}
+				if(ma[i-1]<comp[i-1]&&ma[i]>comp[i]){
+					System.out.println("SELL");
+					double p1 = ((double)(WIDTH - (i) * spaceBetweenDates));
+					double p2 = ((double)(WIDTH - (i + 1) * spaceBetweenDates));
+					double p3 = (p1+p2)/2;
+					double y0 = (HEIGHT * (upperPrice - ma[i + 1]) / (upperPrice - lowerPrice));
+					double y1 = y0+45;
+					double y2 = y0+10;
+					System.out.println("BUY");
+					Polygon pol = new Polygon();
+					pol.getPoints().addAll(new Double[]{
+					p1, y1,
+					p2, y1,
+					p3, y2,
+					});
+					pol.setFill(Color.YELLOW);
+					Text label = new Text();
+					label.setX(p1-2);
+					label.setY(y2+20);
+					label.setText("BUY");
+					label.setFill(Color.CHARTREUSE);
+					label.setFont(Font.font(null, FontWeight.BOLD, 12));
+					indicatorPolygons[n].add(pol);
+					indicatorText[n].add(label);
+			}
+		}
+	}
+	
 	// draw the sma on the price chart
 	private void DrawSMA(int n, Pane root) {
 		for (int i = 0; i < period - 1; i++) {
+			if(n==comparatorAverage){
+				root.getChildren().add(SMACompare[i]);
+				continue;
+			}
 			switch(n) {
 			case 20:
 				root.getChildren().add(SMA20[i]);
@@ -375,6 +564,10 @@ public class Main extends Application {
 	// remove the sma from the chart
 	public void EraseSMA(int n, Pane root) {
 		for (int i = 0; i < period - 1; i++) {
+			if(n==comparatorAverage){
+				root.getChildren().remove(SMACompare[i]);
+				continue;
+			}
 			switch(n) {
 			case 20:
 				root.getChildren().remove(SMA20[i]);
@@ -391,6 +584,34 @@ public class Main extends Application {
 			}
 		}
 	}
+	
+	// draw the indicators on the price chart
+		private void DrawIND(int n, Pane root) {
+			if(indicatorPolygons[n].isEmpty()){
+				System.out.println("No indicators found.");
+			}else{
+				for(Polygon pol : indicatorPolygons[n]){
+					root.getChildren().add(pol);
+				}
+				for(Text txt : indicatorText[n]){
+					root.getChildren().add(txt);
+				}
+			}
+		}
+		
+		// remove the indicators from the chart
+		public void EraseIND(int n, Pane root) {
+			if(indicatorPolygons[n].isEmpty()){
+				System.out.println("No indicators found.");
+			}else{
+				for(Polygon pol : indicatorPolygons[n]){
+					root.getChildren().remove(pol);
+				}
+				for(Text txt : indicatorText[n]){
+					root.getChildren().remove(txt);
+				}
+			}
+		}
 	
 	@Override
 	public void start(Stage primaryStage) {
