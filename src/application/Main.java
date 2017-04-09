@@ -8,6 +8,7 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.Separator;
 import javafx.scene.control.TextField;
@@ -45,23 +46,23 @@ public class Main extends Application {
 		
 	private float upperPrice = 1;
 	private float lowerPrice = 1;
-	private int period = 50; // 20 days' prices will be displayed by default
+	final private int maxNumOfRecordsToDisplay = 50;
+	
+	private int interval = 1;
 	
 	private float spaceBetweenDates;
 	private float spaceBetweenPrices;
 	
-	private Line[] SMACompare = new Line[period-1]; //comparison line for finding indicators
+	private Line[] SMACompare = new Line[maxNumOfRecordsToDisplay - 1]; //comparison line for finding indicators
 	private int comparatorAverage = 1;        		// set average
 	
-	private Line[] SMA20 = new Line[period-1];
-	private Line[] SMA50 = new Line[period-1];
-	private Line[] SMA100 = new Line[period-1];
-	private Line[] SMA200 = new Line[period-1];
-	
+	private Line[] SMA20 = new Line[maxNumOfRecordsToDisplay - 1];
+	private Line[] SMA50 = new Line[maxNumOfRecordsToDisplay - 1];
+	private Line[] SMA100 = new Line[maxNumOfRecordsToDisplay - 1];
+	private Line[] SMA200 = new Line[maxNumOfRecordsToDisplay - 1];	
 	
 	private ArrayList<Polygon>[] indicatorPolygons = new ArrayList [4];
 	private ArrayList<Text>[] indicatorText = new ArrayList [4];
-	
 	
 	private float[] maCompare;
 	private float[] ma1; 							//to check ma values
@@ -104,7 +105,6 @@ public class Main extends Application {
 			}
 		});
 		layout.getChildren().addAll(label1, stockSymbol, label3, btn);
-		
 
 		window.setScene(scene);
 		window.show();
@@ -117,14 +117,18 @@ public class Main extends Application {
 	
 	// Get the historical data of the stock according to users' inputs, and initialize the data related to the stock
 	private void InitializeStock(String symbol) {
-		GregorianCalendar start = new GregorianCalendar(2016, 1, 3);
+		GregorianCalendar start = new GregorianCalendar(2011, 0, 1);
 		GregorianCalendar end = new GregorianCalendar(2017, 3, 6); // find a way to get the current date, instead of hardcoding it
 		stock = StockFetcher.get(symbol, start, end);
 		
-		upperPrice = (float) Math.ceil(stock.HighestPriceOverAPeriod(period));
-		lowerPrice = (float) Math.floor(stock.LowestPriceOverAPeriod(period));
+		IntializePriceBounds();
+	}
+	
+	private void IntializePriceBounds() {
+		upperPrice = (float) Math.ceil(stock.HighestPriceOverAPeriod(maxNumOfRecordsToDisplay * interval));
+		lowerPrice = (float) Math.floor(stock.LowestPriceOverAPeriod(maxNumOfRecordsToDisplay * interval));
 		
-		spaceBetweenDates = WIDTH / ((float)period + 1);
+		spaceBetweenDates = WIDTH / ((float)maxNumOfRecordsToDisplay + 1);
 		spaceBetweenPrices = HEIGHT / (upperPrice - lowerPrice);
 	}
 	
@@ -183,8 +187,20 @@ public class Main extends Application {
 		    }
 		});
 		
+		Label lb = new Label("Set the interval(days):");
+		TextField tf = new TextField(Integer.toString(interval));
+		Button bt = new Button("Change");
+		bt.setOnAction((ActionEvent e) -> {
+			if (isNumeric(tf.getText())) {
+				interval = Integer.parseInt(tf.getText());
+				IntializePriceBounds();
+				cleanScreen(root);
+				InitializeGrid(root);
+			}
+		});
+		
 		ToolBar toolBar1 = new ToolBar();
-		toolBar1.getItems().addAll(new Separator(), addMA20, addMA50, addMA100, addMA200, new Separator(), selectStockBtn, new Separator(), addIndicatorsBtn);
+		toolBar1.getItems().addAll(new Separator(), addMA20, addMA50, addMA100, addMA200, new Separator(), selectStockBtn, new Separator(), addIndicatorsBtn, new Separator(), lb, tf, bt);
 		root.setTop(toolBar1);
 		
 		// Toggle buttons actions
@@ -302,12 +318,12 @@ public class Main extends Application {
         int base_month = stock.GetDailyPrice(0).GetDate().get(Calendar.MONTH);
         int base_year = stock.GetDailyPrice(0).GetDate().get(Calendar.YEAR);
         
-        for (int i = 0; i < period; i++) {
+        for (int i = 0; i < maxNumOfRecordsToDisplay * interval; i += interval) {
         	// labels of day
         	Label label = new Label(String.valueOf(stock.GetDailyPrice(i).GetDate().get(Calendar.DAY_OF_MONTH)));
         	label.setTextFill(Color.YELLOW);
 	        label.setPrefSize(100, 100);
-	        label.setLayoutX(WIDTH - spaceBetweenDates * i - 20);
+	        label.setLayoutX(WIDTH - spaceBetweenDates * i / interval - 20);
 	        label.setLayoutY(HEIGHT - 40);
 	        chart.getChildren().add(label);
 	        
@@ -317,7 +333,7 @@ public class Main extends Application {
 	        	Label label_month = new Label(String.valueOf(Month.values()[base_month]));
 	        	label_month.setTextFill(Color.YELLOW);
 	        	label_month.setPrefSize(100, 100);
-	        	label_month.setLayoutX(WIDTH - spaceBetweenDates * i);
+	        	label_month.setLayoutX(WIDTH - spaceBetweenDates * i / interval);
 	        	label_month.setLayoutY(HEIGHT - 20);
 		        chart.getChildren().add(label_month);
 		        base_month = month;
@@ -329,7 +345,7 @@ public class Main extends Application {
 	        	Label label_year = new Label(String.valueOf(base_year));
 	        	label_year.setTextFill(Color.YELLOW);
 	        	label_year.setPrefSize(100, 100);
-	        	label_year.setLayoutX(WIDTH - spaceBetweenDates * i);
+	        	label_year.setLayoutX(WIDTH - spaceBetweenDates * i / interval);
 	        	label_year.setLayoutY(HEIGHT);
 		        chart.getChildren().add(label_year);
 		        base_year = year;
@@ -337,12 +353,11 @@ public class Main extends Application {
         }
         
         DrawChart(chart);
-
 	}
 	
 	// Draw the price chart of the stock
 	public void DrawChart(Pane root) {
-		for (int i = 0; i < period; i++) {
+		for (int i = 0; i < maxNumOfRecordsToDisplay * interval; i+=interval) {
 			float high = stock.GetDailyPrice(i).GetHigh();
 			float low = stock.GetDailyPrice(i).GetLow();
 			float open = stock.GetDailyPrice(i).GetOpening();
@@ -350,14 +365,14 @@ public class Main extends Application {
 			
 			// Draw the "High-low" price line
 			Line line = new Line();
-			line.setStartX(WIDTH - (i + 1) * spaceBetweenDates);
+			line.setStartX(WIDTH - (i / interval + 1) * spaceBetweenDates);
 			line.setStartY(HEIGHT * (upperPrice - high) / (upperPrice - lowerPrice));
-			line.setEndX(WIDTH - (i + 1) * spaceBetweenDates);
+			line.setEndX(WIDTH - (i / interval + 1) * spaceBetweenDates);
 			line.setEndY(HEIGHT * (upperPrice - low) / (upperPrice - lowerPrice));
 			
 			// Draw the "Open-close" price Rectangle
 			Rectangle r = new Rectangle();
-			r.setX(WIDTH - (i + 1) * spaceBetweenDates - 5.0f);
+			r.setX(WIDTH - (i / interval + 1) * spaceBetweenDates - 5.0f);
 			r.setY(HEIGHT * (upperPrice - ((open > close)?open:close)) / (upperPrice - lowerPrice));
 			r.setWidth(10.0f);
 			r.setHeight(HEIGHT * Math.abs(open - close) / (upperPrice - lowerPrice));
@@ -378,27 +393,16 @@ public class Main extends Application {
 	}
 
 	// Initially set all SMAs
-	public void InitializeSMA(int n, Pane root) {
-		float ma[] = new float[period];
-//		System.out.print("For MA at " + n);
-		System.out.format("%15s%5d","For MA at ",n);
-		for (int i = 0; i < period; i++) {
-			System.out.format("%15d",i);
-		}
-		System.out.println();
-		
-		System.out.format("%15s%5d","For MA at ",n);
-		for (int i = 0; i < period; i++) {
+
+	public void InitializeSMA(int n, Pane root) {		
+		float ma[] = new float[maxNumOfRecordsToDisplay];
+		for (int i = 0; i < maxNumOfRecordsToDisplay; i++) {
 			float sum = 0;
 			for (int j = 0; j < n; j++) {
-				sum += stock.GetDailyPrice(i + j).GetClose();
+				sum += stock.GetDailyPrice(i * interval + j).GetClose();
 			}
 			ma[i] = sum / n;
-			System.out.format("%15.1f",ma[i]);
-		}
-		
-		System.out.println();
-		
+		}		
 		
 		if(n==comparatorAverage){
 			maCompare = ma;
@@ -411,16 +415,16 @@ public class Main extends Application {
 				ma2 = ma;
 				break;
 			case 100:
-				ma3 =ma;
+				ma3 = ma;
 				break;
 			case 200:
-				ma4 =ma;
+				ma4 = ma;
 				break;		
 			}
 		}
-		
-		for (int i = 0; i < period - 1; i++) {
-			if(n == comparatorAverage){
+			
+		for (int i = 0; i < maxNumOfRecordsToDisplay - 1; i++) {
+      if(n == comparatorAverage){
 				SMACompare[i] = new Line();
 				SMACompare[i].setStartX(WIDTH - (i + 1) * spaceBetweenDates);
 				SMACompare[i].setStartY(HEIGHT * (upperPrice - ma[i]) / (upperPrice - lowerPrice));
@@ -429,7 +433,6 @@ public class Main extends Application {
 				SMACompare[i].setStroke(Color.YELLOW);
 				continue;
 			}
-			
 			switch(n) {
 			case 20:
 				SMA20[i] = new Line();
@@ -539,8 +542,9 @@ public class Main extends Application {
 	
 	// draw the sma on the price chart
 	private void DrawSMA(int n, Pane root) {
-		for (int i = 0; i < period - 1; i++) {
-			if(n==comparatorAverage){
+
+		for (int i = 0; i < maxNumOfRecordsToDisplay - 1; i++) {
+      if(n == comparatorAverage){
 				root.getChildren().add(SMACompare[i]);
 				continue;
 			}
@@ -563,8 +567,8 @@ public class Main extends Application {
 	
 	// remove the sma from the chart
 	public void EraseSMA(int n, Pane root) {
-		for (int i = 0; i < period - 1; i++) {
-			if(n==comparatorAverage){
+		for (int i = 0; i < maxNumOfRecordsToDisplay - 1; i++) {
+      if(n == comparatorAverage){
 				root.getChildren().remove(SMACompare[i]);
 				continue;
 			}
@@ -612,6 +616,14 @@ public class Main extends Application {
 				}
 			}
 		}
+	private boolean isNumeric(String s) {
+		for (int i = 0; i < s.length(); i++) {
+			if (!Character.isDigit(s.charAt(i))) {
+				return false;
+			}
+		}
+		return true;	
+	}
 	
 	@Override
 	public void start(Stage primaryStage) {
@@ -620,7 +632,7 @@ public class Main extends Application {
 			primaryStage.setScene(scene);
 			primaryStage.show();
 			selectStockBox();
-			LoginBox.display();
+	//		LoginBox.display();
 		} catch(Exception e) {
 			e.printStackTrace();
 		}
