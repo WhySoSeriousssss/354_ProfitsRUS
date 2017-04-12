@@ -19,7 +19,7 @@ import javafx.stage.WindowEvent;
 
 public class LoginBox {
 
-	private static boolean verfyAccount(String username, String password) {
+	private static boolean verifyAccount(String username, String password) {
 		try(BufferedReader reader = new BufferedReader(new FileReader("account.txt"))) {
 			String tuple;
 			while((tuple = reader.readLine()) != null) {
@@ -66,7 +66,7 @@ public class LoginBox {
 		
 		Button btn = new Button("Log in");
 		btn.setOnAction((ActionEvent e) -> {
-			if (verfyAccount(usnField.getText(), pwdField.getText()) == true) {
+			if (verifyAccount(usnField.getText(), pwdField.getText()) == true) {
 				window.close();
 			}
 			else {

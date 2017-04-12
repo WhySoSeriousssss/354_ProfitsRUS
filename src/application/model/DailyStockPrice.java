@@ -3,8 +3,6 @@ package application.model;
 
 
 import java.util.GregorianCalendar;
-import java.util.Calendar;
-import java.util.TimeZone;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -19,9 +17,9 @@ public class DailyStockPrice {
 	private float Close;
 	private float AdjClose;
 	
-	private int Volumn;
+	private int Volume;
 	
-	public DailyStockPrice(String strDate, float open, float high, float low, float close, int volumn, float adjclose) throws ParseException {
+	public DailyStockPrice(String strDate, float open, float high, float low, float close, int volume, float adjclose) throws ParseException {
 		DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
 		Date d = df.parse(strDate);
 		date = new GregorianCalendar();
@@ -32,7 +30,7 @@ public class DailyStockPrice {
 		this.Low = low;
 		this.Close = close;
 		this.AdjClose = adjclose;
-		this.Volumn = volumn;
+		this.Volume = volume;
 	}
 	
 	public GregorianCalendar GetDate() {
@@ -59,11 +57,8 @@ public class DailyStockPrice {
 		return this.AdjClose;
 	}
 	
-	public int GetVolumn() {
-		return this.Volumn;
+	public int GetVolume() {
+		return this.Volume;
 	}
-	
-	public void Print() {
-		System.out.println(date.toString() + " " + Opening + " " + High + " " + Low + " " + Close + " " + Volumn +  " " + AdjClose);
-	}
+
 }

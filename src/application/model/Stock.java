@@ -2,9 +2,7 @@ package application.model;
 
 import java.util.ArrayList;
 
-import application.Subject;
-
-public class Stock extends Subject{
+public class Stock{
 
 	String symbol;
 	private ArrayList<DailyStockPrice> stock;
@@ -39,12 +37,5 @@ public class Stock extends Subject{
 		}
 		return p;
 	}
-	
-	public void Print() {
-		int size = stock.size();
-		for (int i = 0; i < size; i++) {
-			stock.get(i).Print();
-		}
-	}
-	
+
 }

@@ -8,20 +8,14 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.Separator;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleButton;
-import javafx.scene.control.ToggleGroup;
 import javafx.scene.control.ToolBar;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
-
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
 import application.model.Stock;
 import javafx.scene.paint.Color;
@@ -356,7 +350,7 @@ public class Main extends Application {
 	}
 	
 	// Draw the price chart of the stock
-	public void DrawChart(Pane root) {
+	private void DrawChart(Pane root) {
 		for (int i = 0; i < maxNumOfRecordsToDisplay * interval; i+=interval) {
 			float high = stock.GetDailyPrice(i).GetHigh();
 			float low = stock.GetDailyPrice(i).GetLow();
@@ -393,8 +387,7 @@ public class Main extends Application {
 	}
 
 	// Initially set all SMAs
-
-	public void InitializeSMA(int n, Pane root) {		
+	private void InitializeSMA(int n, Pane root) {		
 		float ma[] = new float[maxNumOfRecordsToDisplay];
 		for (int i = 0; i < maxNumOfRecordsToDisplay; i++) {
 			float sum = 0;
@@ -404,27 +397,28 @@ public class Main extends Application {
 			ma[i] = sum / n;
 		}		
 		
-		if(n==comparatorAverage){
+		if(n == comparatorAverage){
 			maCompare = ma;
-		}else{
+		}
+		else{
 			switch(n){
-			case 20:
-				ma1 = ma;
-				break;
-			case 50:
-				ma2 = ma;
-				break;
-			case 100:
-				ma3 = ma;
-				break;
-			case 200:
-				ma4 = ma;
-				break;		
+				case 20:
+					ma1 = ma;
+					break;
+				case 50:
+					ma2 = ma;
+					break;
+				case 100:
+					ma3 = ma;
+					break;
+				case 200:
+					ma4 = ma;
+					break;		
 			}
 		}
 			
 		for (int i = 0; i < maxNumOfRecordsToDisplay - 1; i++) {
-      if(n == comparatorAverage){
+			if(n == comparatorAverage){
 				SMACompare[i] = new Line();
 				SMACompare[i].setStartX(WIDTH - (i + 1) * spaceBetweenDates);
 				SMACompare[i].setStartY(HEIGHT * (upperPrice - ma[i]) / (upperPrice - lowerPrice));
@@ -487,7 +481,7 @@ public class Main extends Application {
 	}
 	
 	private void findIndicatorHelper (float[] comp, float [] ma, int n){
-		for(int i = 1; i< period-1; i++){
+		for(int i = 1; i< maxNumOfRecordsToDisplay - 1; i++){
 			if(ma[i-1]>comp[i-1]&&ma[i]<comp[i]){
 				double p1 = ((double)(WIDTH - (i ) * spaceBetweenDates));
 				double p2 = ((double)(WIDTH - (i + 1) * spaceBetweenDates));
@@ -512,39 +506,38 @@ public class Main extends Application {
 				indicatorPolygons[n].add(pol);
 				indicatorText[n].add(label);
 			}
-				if(ma[i-1]<comp[i-1]&&ma[i]>comp[i]){
-					System.out.println("SELL");
-					double p1 = ((double)(WIDTH - (i) * spaceBetweenDates));
-					double p2 = ((double)(WIDTH - (i + 1) * spaceBetweenDates));
-					double p3 = (p1+p2)/2;
-					double y0 = (HEIGHT * (upperPrice - ma[i + 1]) / (upperPrice - lowerPrice));
-					double y1 = y0+45;
-					double y2 = y0+10;
-					System.out.println("BUY");
-					Polygon pol = new Polygon();
-					pol.getPoints().addAll(new Double[]{
-					p1, y1,
-					p2, y1,
-					p3, y2,
-					});
-					pol.setFill(Color.YELLOW);
-					Text label = new Text();
-					label.setX(p1-2);
-					label.setY(y2+20);
-					label.setText("BUY");
-					label.setFill(Color.CHARTREUSE);
-					label.setFont(Font.font(null, FontWeight.BOLD, 12));
-					indicatorPolygons[n].add(pol);
-					indicatorText[n].add(label);
+			if(ma[i-1]<comp[i-1]&&ma[i]>comp[i]){
+				System.out.println("SELL");
+				double p1 = ((double)(WIDTH - (i) * spaceBetweenDates));
+				double p2 = ((double)(WIDTH - (i + 1) * spaceBetweenDates));
+				double p3 = (p1+p2)/2;
+				double y0 = (HEIGHT * (upperPrice - ma[i + 1]) / (upperPrice - lowerPrice));
+				double y1 = y0+45;
+				double y2 = y0+10;
+				System.out.println("BUY");
+				Polygon pol = new Polygon();
+				pol.getPoints().addAll(new Double[]{
+				p1, y1,
+				p2, y1,
+				p3, y2,
+				});
+				pol.setFill(Color.YELLOW);
+				Text label = new Text();
+				label.setX(p1-2);
+				label.setY(y2+20);
+				label.setText("BUY");
+				label.setFill(Color.CHARTREUSE);
+				label.setFont(Font.font(null, FontWeight.BOLD, 12));
+				indicatorPolygons[n].add(pol);
+				indicatorText[n].add(label);
 			}
 		}
 	}
 	
 	// draw the sma on the price chart
 	private void DrawSMA(int n, Pane root) {
-
 		for (int i = 0; i < maxNumOfRecordsToDisplay - 1; i++) {
-      if(n == comparatorAverage){
+			if(n == comparatorAverage){
 				root.getChildren().add(SMACompare[i]);
 				continue;
 			}
@@ -566,7 +559,7 @@ public class Main extends Application {
 	}
 	
 	// remove the sma from the chart
-	public void EraseSMA(int n, Pane root) {
+	private void EraseSMA(int n, Pane root) {
 		for (int i = 0; i < maxNumOfRecordsToDisplay - 1; i++) {
       if(n == comparatorAverage){
 				root.getChildren().remove(SMACompare[i]);
@@ -590,32 +583,33 @@ public class Main extends Application {
 	}
 	
 	// draw the indicators on the price chart
-		private void DrawIND(int n, Pane root) {
-			if(indicatorPolygons[n].isEmpty()){
-				System.out.println("No indicators found.");
-			}else{
-				for(Polygon pol : indicatorPolygons[n]){
-					root.getChildren().add(pol);
-				}
-				for(Text txt : indicatorText[n]){
-					root.getChildren().add(txt);
-				}
+	private void DrawIND(int n, Pane root) {
+		if(indicatorPolygons[n].isEmpty()){
+			System.out.println("No indicators found.");
+		}else{
+			for(Polygon pol : indicatorPolygons[n]){
+				root.getChildren().add(pol);
+			}
+			for(Text txt : indicatorText[n]){
+				root.getChildren().add(txt);
 			}
 		}
+	}
 		
-		// remove the indicators from the chart
-		public void EraseIND(int n, Pane root) {
-			if(indicatorPolygons[n].isEmpty()){
-				System.out.println("No indicators found.");
-			}else{
-				for(Polygon pol : indicatorPolygons[n]){
-					root.getChildren().remove(pol);
-				}
-				for(Text txt : indicatorText[n]){
-					root.getChildren().remove(txt);
-				}
+	// remove the indicators from the chart
+	private void EraseIND(int n, Pane root) {
+		if(indicatorPolygons[n].isEmpty()){
+			System.out.println("No indicators found.");
+		}else{
+			for(Polygon pol : indicatorPolygons[n]){
+				root.getChildren().remove(pol);
+			}
+			for(Text txt : indicatorText[n]){
+				root.getChildren().remove(txt);
 			}
 		}
+	}
+	
 	private boolean isNumeric(String s) {
 		for (int i = 0; i < s.length(); i++) {
 			if (!Character.isDigit(s.charAt(i))) {
@@ -632,7 +626,7 @@ public class Main extends Application {
 			primaryStage.setScene(scene);
 			primaryStage.show();
 			selectStockBox();
-	//		LoginBox.display();
+			LoginBox.display();
 		} catch(Exception e) {
 			e.printStackTrace();
 		}
