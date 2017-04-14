@@ -69,7 +69,8 @@ public class Main extends Application {
 	
 	private BorderPane root = new BorderPane(); // the pane of the main interface
 	private Scene scene = new Scene(root, WIDTH + MARGIN, HEIGHT + MARGIN); // the scene of the main interface
-
+	
+	
 	// the pop-up box to let the users enter the stock symbol they want to view
 	public void selectStockBox() {
 		// clear the root pane
@@ -163,6 +164,18 @@ public class Main extends Application {
 		ComboBox symbolOptions = new ComboBox(options);
 				
 		Button btn = new Button("Submit");
+		btn.setOnAction((ActionEvent e) -> {
+
+			if (symbolOptions.getValue().equals(""))
+				label3.setText("Invalid stock symbol");
+			else {
+				cleanScreen(root);
+				InitializeStock(symbolOptions.getValue().toString());
+				InitializeGrid(root);
+				window.close();
+			}
+		});
+		
 		btn.setOnAction((ActionEvent e) -> {
 
 			if (symbolOptions.getValue().equals(""))
