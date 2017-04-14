@@ -3,11 +3,14 @@ package application;
 import application.model.*;
 
 import javafx.application.Application;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.Separator;
 import javafx.scene.control.TextField;
@@ -76,7 +79,7 @@ public class Main extends Application {
 		window.initModality(Modality.APPLICATION_MODAL);
 		window.setTitle("Select Stock");
 		window.setWidth(250);
-		window.setHeight(200);
+		window.setHeight(750);
 		
 		VBox layout = new VBox(10);
 		
@@ -85,20 +88,93 @@ public class Main extends Application {
 		Label label1 = new Label("Please Enter the stock symbol:");
 		Label label3 = new Label();
 		
+		String description = 
+				  "AXP	\t American Express Co \n" +
+				  "AAPL \t Apple Inc \n" +
+				  "BA	\t Boeing Co \n" +
+				  "CAT	\t Caterpillar Inc \n" +
+				  "CSCO\t Cisco Systems Inc \n" +
+				  "CVX	\t Chevron Corp \n" +
+				  "DD	\t E I du Pont de Nemours and Co \n" +
+				  "XOM \t Exxon Mobil Corp \n" +
+				  "GE	\t General Electric Co \n" +
+				  "GS	\t Goldman Sachs Group Inc \n" +
+				  "HD	\t Home Depot Inc \n" +
+				  "IBM	\t International Business Machines Corp \n" +
+				  "INTC	\t Intel Corp \n" +
+				  "JNJ	\t Johnson & Johnson \n" +
+				  "KO	\t Coca-Cola Co \n" +
+				  "JPM	\t JPMorgan Chase & Co \n" +
+				  "MCD \t McDonald's Corp \n" +
+				  "MMM \t 3M Co \n" +
+				  "MRK	\t Merck & Co Inc \n" +
+				  "MSFT\t Microsoft Corp  \n" +
+				  "NKE	\t Nike Inc  \n" +
+				  "PFE	\t Pfizer Inc \n" +
+				  "PG	\t Procter & Gamble Co  \n" +
+				  "TRV	\t Travelers Companies Inc \n" +
+				  "UNH	\t UnitedHealth Group Inc \n" +
+				  "UTX	\t United Technologies Corp \n" +
+				  "VZ	\t Verizon Communications Inc \n" +
+				  "V	\t Visa Inc \n" +
+				  "WMT\t Wal-Mart Stores Inc \n" +
+				  "DIS	\t Walt Disney Co \n" ;
+		
+		Text dText = new Text(description);
+
+//		Label labelText = new Label(dText);
+//		labelText.setMinHeight(50);
 		TextField stockSymbol = new TextField ();
+		
+		ObservableList<String> options = 
+			    FXCollections.observableArrayList(
+			        "AXP",
+			        "AAPL",
+			        "BA",
+			        "CAT",
+			        "CSCO",
+			        "CVX",
+			        "DD",
+			        "XOM",
+			        "GE",
+			        "GS",
+			        "HD",
+			        "IBM",
+			        "INTC",
+			        "JNJ",
+			        "KO",
+			        "JPM",
+			        "MCD",
+			        "MMM",
+			        "MRK",
+			        "MSFT",
+			        "NKE",
+			        "PFE",
+			        "PG",
+			        "TRV",
+			        "UNH",
+			        "UTX",
+			        "VZ",
+			        "V",
+			        "WMT",
+			        "DIS"
+			    );
+		
+		ComboBox symbolOptions = new ComboBox(options);
 				
 		Button btn = new Button("Submit");
 		btn.setOnAction((ActionEvent e) -> {
-			if (stockSymbol.getText().equals(""))
+
+			if (symbolOptions.getValue().equals(""))
 				label3.setText("Invalid stock symbol");
 			else {
 				cleanScreen(root);
-				InitializeStock(stockSymbol.getText());
+				InitializeStock(symbolOptions.getValue().toString());
 				InitializeGrid(root);
 				window.close();
 			}
 		});
-		layout.getChildren().addAll(label1, stockSymbol, label3, btn);
+		layout.getChildren().addAll(label1,dText,symbolOptions, label3, btn);
 
 		window.setScene(scene);
 		window.show();
@@ -117,7 +193,6 @@ public class Main extends Application {
 		
 		IntializePriceBounds();
 	}
-	
 	private void IntializePriceBounds() {
 		upperPrice = (float) Math.ceil(stock.HighestPriceOverAPeriod(maxNumOfRecordsToDisplay * interval));
 		lowerPrice = (float) Math.floor(stock.LowestPriceOverAPeriod(maxNumOfRecordsToDisplay * interval));
@@ -181,7 +256,8 @@ public class Main extends Application {
 		    }
 		});
 		
-		Label lb = new Label("Set the interval(days):");
+		Label lb = new Label("days per unit ");
+		Label lb2 = new Label((interval * 50) + " day range");
 		TextField tf = new TextField(Integer.toString(interval));
 		Button bt = new Button("Change");
 		bt.setOnAction((ActionEvent e) -> {
@@ -194,7 +270,7 @@ public class Main extends Application {
 		});
 		
 		ToolBar toolBar1 = new ToolBar();
-		toolBar1.getItems().addAll(new Separator(), addMA20, addMA50, addMA100, addMA200, new Separator(), selectStockBtn, new Separator(), addIndicatorsBtn, new Separator(), lb, tf, bt);
+		toolBar1.getItems().addAll(new Separator(), addMA20, addMA50, addMA100, addMA200, new Separator(), selectStockBtn, new Separator(), addIndicatorsBtn, new Separator(), lb, tf, bt, lb2);
 		root.setTop(toolBar1);
 		
 		// Toggle buttons actions
